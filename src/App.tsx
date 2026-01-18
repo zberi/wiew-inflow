@@ -9,6 +9,7 @@ import Queue from "./pages/Queue";
 import Destinations from "./pages/Destinations";
 import Groups from "./pages/Groups";
 import Logs from "./pages/Logs";
+import Diagnostics from "./pages/Diagnostics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/logs" element={<Logs />} />
+          <Route path="/diagnostics" element={<Diagnostics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

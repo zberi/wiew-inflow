@@ -6,6 +6,7 @@ import {
   Users,
   FileText,
   Settings,
+  Activity,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -33,6 +34,7 @@ const configNavItems = [
 
 const systemNavItems = [
   { title: "Webhook Logs", url: "/logs", icon: FileText },
+  { title: "Diagnostics", url: "/diagnostics", icon: Activity },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
