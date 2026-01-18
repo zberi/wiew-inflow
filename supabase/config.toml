@@ -1,1 +1,10 @@
 project_id = "mjtckkykylmiwxnanhrs"
+
+[functions.twilio-webhook]
+verify_jwt = false
+
+[functions.whatsapp-cloud-webhook]
+verify_jwt = false
+
+[functions.process-upload]
+verify_jwt = false
