@@ -29,7 +29,7 @@ export default function Diagnostics() {
   const { toast } = useToast();
   const [twilioTest, setTwilioTest] = useState<TestResult>({ status: "idle" });
   const [cloudApiTest, setCloudApiTest] = useState<TestResult>({ status: "idle" });
-  const [verifyToken, setVerifyToken] = useState("my-whatsapp-verify-token");
+  const [verifyToken, setVerifyToken] = useState("my-whatsapp-webhook-verify-2026");
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const twilioWebhookUrl = `${supabaseUrl}/functions/v1/twilio-webhook`;

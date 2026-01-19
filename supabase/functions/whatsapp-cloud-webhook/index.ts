@@ -49,7 +49,9 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
-  const verifyToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
+  
+  // Hardcoded verify token for webhook verification
+  const verifyToken = "my-whatsapp-webhook-verify-2026";
   
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
