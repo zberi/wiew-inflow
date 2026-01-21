@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { MessageSquare } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -20,6 +21,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </div>
               <span className="font-semibold text-lg">WhatsApp Media Hub</span>
             </div>
+            <div className="flex-1" />
+            <ThemeToggle />
           </header>
           <main className="flex-1 overflow-auto p-6 bg-background">
             {children}

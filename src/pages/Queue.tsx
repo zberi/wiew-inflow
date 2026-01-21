@@ -5,9 +5,15 @@ import {
   useApproveUpload,
   useRejectUpload,
   useRetryUpload,
+  useQueueStats,
   type UploadStatus,
 } from "@/hooks/useUploadQueue";
+import { useBulkApproveUploads, useBulkRejectUploads } from "@/hooks/useBulkQueueActions";
+import { usePagination } from "@/hooks/usePagination";
 import { useToast } from "@/hooks/use-toast";
+import { BulkActions } from "@/components/queue/BulkActions";
+import { DataTablePagination } from "@/components/shared/DataTablePagination";
+import { MediaThumbnail } from "@/components/media/MediaThumbnail";
 import {
   Table,
   TableBody,
@@ -29,8 +35,6 @@ import {
   Check,
   X,
   RotateCcw,
-  Image,
-  Video,
   Clock,
   CheckCircle,
   XCircle,
@@ -53,10 +57,23 @@ export default function Queue() {
   const { data: queueItems, isLoading } = useUploadQueue(
     statusFilter === "all" ? undefined : { status: statusFilter as UploadStatus }
   );
+  const { data: stats } = useQueueStats();
+  
   const approveUpload = useApproveUpload();
   const rejectUpload = useRejectUpload();
   const retryUpload = useRetryUpload();
+  const bulkApprove = useBulkApproveUploads();
+  const bulkReject = useBulkRejectUploads();
   const { toast } = useToast();
+
+  const {
+    page,
+    pageSize,
+    setPage,
+    setPageSize,
+    paginatedData,
+    totalItems,
+  } = usePagination(queueItems);
 
   const handleApprove = async (id: string) => {
     try {
@@ -85,6 +102,26 @@ export default function Queue() {
     }
   };
 
+  const handleBulkApprove = async () => {
+    try {
+      await bulkApprove.mutateAsync();
+      toast({ title: "All approved", description: `All pending uploads have been approved.` });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to approve uploads.", variant: "destructive" });
+    }
+  };
+
+  const handleBulkReject = async () => {
+    try {
+      await bulkReject.mutateAsync();
+      toast({ title: "All rejected", description: `All pending uploads have been rejected.` });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to reject uploads.", variant: "destructive" });
+    }
+  };
+
+  const pendingCount = stats?.pending ?? 0;
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -110,6 +147,16 @@ export default function Queue() {
             </SelectContent>
           </Select>
         </div>
+
+        {statusFilter === "all" && (
+          <BulkActions
+            pendingCount={pendingCount}
+            onApproveAll={handleBulkApprove}
+            onRejectAll={handleBulkReject}
+            isApproving={bulkApprove.isPending}
+            isRejecting={bulkReject.isPending}
+          />
+        )}
 
         {isLoading ? (
           <div className="border rounded-lg p-8 text-center">
@@ -139,7 +186,7 @@ export default function Queue() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {queueItems?.map((item) => {
+                {paginatedData.map((item) => {
                   const status = item.status || "pending";
                   const config = statusConfig[status];
 
@@ -147,13 +194,12 @@ export default function Queue() {
                     <TableRow key={item.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                            {item.media_items?.media_type === "photo" ? (
-                              <Image className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                              <Video className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
+                          <MediaThumbnail
+                            filePath={item.media_items?.file_path ?? null}
+                            thumbnailPath={item.media_items?.thumbnail_path ?? null}
+                            mediaType={item.media_items?.media_type ?? "photo"}
+                            className="h-10 w-10 rounded"
+                          />
                           <div>
                             <p className="font-medium text-sm">
                               {item.media_items?.sender_name || item.media_items?.sender_phone || "Unknown"}
@@ -198,6 +244,7 @@ export default function Queue() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleApprove(item.id)}
+                                disabled={approveUpload.isPending}
                                 className="text-primary hover:text-primary"
                               >
                                 <Check className="h-4 w-4" />
@@ -206,6 +253,7 @@ export default function Queue() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleReject(item.id)}
+                                disabled={rejectUpload.isPending}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <X className="h-4 w-4" />
@@ -217,6 +265,7 @@ export default function Queue() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleRetry(item.id)}
+                              disabled={retryUpload.isPending}
                             >
                               <RotateCcw className="h-4 w-4" />
                             </Button>
@@ -228,6 +277,13 @@ export default function Queue() {
                 })}
               </TableBody>
             </Table>
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           </div>
         )}
       </div>

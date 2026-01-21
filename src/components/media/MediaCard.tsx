@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Image, Video, MoreVertical, Eye, Upload, Trash2 } from "lucide-react";
+import { MoreVertical, Eye, Upload, Trash2 } from "lucide-react";
+import { MediaThumbnail } from "./MediaThumbnail";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,12 +22,14 @@ interface MediaCardProps {
 export function MediaCard({ item, onView, onQueue, onDelete }: MediaCardProps) {
   return (
     <Card className="group overflow-hidden">
-      <div className="aspect-video bg-muted relative flex items-center justify-center">
-        {item.media_type === "photo" ? (
-          <Image className="h-12 w-12 text-muted-foreground" />
-        ) : (
-          <Video className="h-12 w-12 text-muted-foreground" />
-        )}
+      <div className="aspect-video relative">
+        <MediaThumbnail
+          filePath={item.file_path}
+          thumbnailPath={item.thumbnail_path}
+          mediaType={item.media_type}
+          alt={item.caption || "Media item"}
+          className="w-full h-full"
+        />
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           <Button
             size="sm"
