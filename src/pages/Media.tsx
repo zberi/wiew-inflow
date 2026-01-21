@@ -4,7 +4,10 @@ import { MediaCard } from "@/components/media/MediaCard";
 import { MediaFilters } from "@/components/media/MediaFilters";
 import { MediaDetailModal } from "@/components/media/MediaDetailModal";
 import { QueueMediaDialog } from "@/components/media/QueueMediaDialog";
+import { DataTablePagination } from "@/components/shared/DataTablePagination";
+import { MediaThumbnail } from "@/components/media/MediaThumbnail";
 import { useMediaItems, useDeleteMediaItem, type MediaItem } from "@/hooks/useMediaItems";
+import { usePagination } from "@/hooks/usePagination";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -44,6 +47,15 @@ export default function Media() {
 
   const deleteMediaItem = useDeleteMediaItem();
   const { toast } = useToast();
+
+  const {
+    page,
+    pageSize,
+    setPage,
+    setPageSize,
+    paginatedData,
+    totalItems,
+  } = usePagination(mediaItems);
 
   const handleDelete = async () => {
     if (!deleteItem) return;
@@ -99,22 +111,32 @@ export default function Media() {
             </p>
           </div>
         ) : viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {mediaItems?.map((item) => (
-              <MediaCard
-                key={item.id}
-                item={item}
-                onView={setSelectedItem}
-                onQueue={setQueueItem}
-                onDelete={setDeleteItem}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {paginatedData.map((item) => (
+                <MediaCard
+                  key={item.id}
+                  item={item}
+                  onView={setSelectedItem}
+                  onQueue={setQueueItem}
+                  onDelete={setDeleteItem}
+                />
+              ))}
+            </div>
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          </>
         ) : (
           <div className="border rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[60px]">Preview</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Sender</TableHead>
                   <TableHead>Caption</TableHead>
@@ -123,8 +145,16 @@ export default function Media() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mediaItems?.map((item) => (
+                {paginatedData.map((item) => (
                   <TableRow key={item.id}>
+                    <TableCell>
+                      <MediaThumbnail
+                        filePath={item.file_path}
+                        thumbnailPath={item.thumbnail_path}
+                        mediaType={item.media_type}
+                        className="h-10 w-10 rounded"
+                      />
+                    </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="gap-1">
                         {item.media_type === "photo" ? (
@@ -176,6 +206,13 @@ export default function Media() {
                 ))}
               </TableBody>
             </Table>
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           </div>
         )}
       </div>

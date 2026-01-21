@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useWebhookLogs } from "@/hooks/useWebhookLogs";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/shared/DataTablePagination";
 import {
   Table,
   TableBody,
@@ -45,6 +47,15 @@ export default function Logs() {
       ? undefined
       : { processed: statusFilter === "processed" }
   );
+
+  const {
+    page,
+    pageSize,
+    setPage,
+    setPageSize,
+    paginatedData,
+    totalItems,
+  } = usePagination(logs);
 
   return (
     <AdminLayout>
@@ -93,7 +104,7 @@ export default function Logs() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {logs?.map((log) => (
+                {paginatedData.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="text-sm">
                       {format(new Date(log.created_at!), "PPp")}
@@ -143,6 +154,13 @@ export default function Logs() {
                 ))}
               </TableBody>
             </Table>
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
           </div>
         )}
       </div>
