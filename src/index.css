@@ -15,8 +15,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 142 76% 36%;
+    --primary: 152 76% 40%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 152 82% 50%;
 
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -24,42 +25,50 @@
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 142 76% 94%;
-    --accent-foreground: 142 76% 26%;
+    --accent: 152 76% 94%;
+    --accent-foreground: 152 76% 30%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 142 76% 36%;
+    --ring: 152 76% 40%;
 
     --radius: 0.5rem;
 
-    /* Status colors */
-    --success: 142 76% 36%;
+    /* Vibrant status colors */
+    --success: 152 76% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --info: 217 91% 60%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 43 96% 15%;
+    --info: 210 100% 55%;
     --info-foreground: 0 0% 100%;
+
+    /* Vibrant accents */
+    --emerald: 160 84% 39%;
+    --teal: 173 80% 40%;
+    --cyan: 189 94% 43%;
+    --violet: 263 70% 50%;
+    --fuchsia: 292 84% 61%;
+    --rose: 350 89% 60%;
 
     /* Sidebar */
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 142 76% 46%;
+    --sidebar-primary: 152 76% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 18%;
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 222 47% 18%;
-    --sidebar-ring: 142 76% 46%;
+    --sidebar-ring: 152 76% 50%;
 
-    /* Chart colors */
-    --chart-1: 142 76% 36%;
-    --chart-2: 217 91% 60%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 67% 51%;
-    --chart-5: 0 84% 60%;
+    /* Chart colors - vibrant rainbow */
+    --chart-1: 152 76% 40%;
+    --chart-2: 210 100% 55%;
+    --chart-3: 43 96% 56%;
+    --chart-4: 263 70% 50%;
+    --chart-5: 350 89% 60%;
   }
 
   .dark {
@@ -72,8 +81,9 @@
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 142 76% 46%;
+    --primary: 152 76% 50%;
     --primary-foreground: 222 47% 6%;
+    --primary-glow: 152 82% 60%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -81,40 +91,48 @@
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 142 76% 20%;
-    --accent-foreground: 142 76% 80%;
+    --accent: 152 50% 18%;
+    --accent-foreground: 152 76% 75%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 70% 45%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 17%;
+    --border: 217 33% 20%;
     --input: 217 33% 17%;
-    --ring: 142 76% 46%;
+    --ring: 152 76% 50%;
 
-    /* Status colors dark */
-    --success: 142 76% 46%;
+    /* Vibrant status colors dark */
+    --success: 152 76% 50%;
     --success-foreground: 222 47% 6%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 6%;
-    --info: 217 91% 60%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 43 96% 10%;
+    --info: 210 100% 60%;
     --info-foreground: 222 47% 6%;
+
+    /* Vibrant accents */
+    --emerald: 160 84% 45%;
+    --teal: 173 80% 45%;
+    --cyan: 189 94% 50%;
+    --violet: 263 70% 58%;
+    --fuchsia: 292 84% 65%;
+    --rose: 350 89% 65%;
 
     /* Sidebar dark */
     --sidebar-background: 222 47% 6%;
     --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 142 76% 46%;
+    --sidebar-primary: 152 76% 50%;
     --sidebar-primary-foreground: 222 47% 6%;
     --sidebar-accent: 222 47% 14%;
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 222 47% 14%;
-    --sidebar-ring: 142 76% 46%;
+    --sidebar-ring: 152 76% 50%;
 
     /* Chart colors dark */
-    --chart-1: 142 76% 46%;
-    --chart-2: 217 91% 60%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 67% 51%;
-    --chart-5: 0 63% 50%;
+    --chart-1: 152 76% 50%;
+    --chart-2: 210 100% 60%;
+    --chart-3: 43 96% 56%;
+    --chart-4: 263 70% 58%;
+    --chart-5: 350 89% 65%;
   }
 }
 
@@ -146,5 +164,91 @@
   }
   .bg-info {
     background-color: hsl(var(--info));
+  }
+
+  /* Vibrant gradient utilities */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+  }
+  
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--emerald)) 0%, hsl(var(--teal)) 50%, hsl(var(--cyan)) 100%);
+  }
+  
+  .gradient-vibrant {
+    background: linear-gradient(135deg, hsl(var(--violet)) 0%, hsl(var(--fuchsia)) 50%, hsl(var(--rose)) 100%);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--cyan)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glass effect */
+  .glass {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Subtle glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px hsl(var(--success) / 0.3);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-all duration-200;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(var(--foreground) / 0.1);
+  }
+
+  /* Pulse ring animation */
+  .pulse-ring {
+    @apply relative;
+  }
+  .pulse-ring::after {
+    content: '';
+    @apply absolute inset-0 rounded-full;
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
+    }
+  }
+
+  /* Shimmer effect for loading */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
 }
