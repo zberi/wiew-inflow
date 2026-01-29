@@ -1,10 +1,13 @@
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { WebhookActivityCard } from "@/components/dashboard/WebhookActivityCard";
 import { useMediaStats } from "@/hooks/useMediaItems";
 import { useQueueStats } from "@/hooks/useUploadQueue";
 import { useDestinationStats } from "@/hooks/useDestinations";
 import { useGroupStats } from "@/hooks/useGroups";
+import { useWebhookLogStats } from "@/hooks/useWebhookLogs";
+import { Link } from "react-router-dom";
 import {
   Image,
   Upload,
@@ -12,6 +15,7 @@ import {
   AlertCircle,
   Send,
   Users,
+  Webhook,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -19,6 +23,7 @@ export default function Dashboard() {
   const { data: queueStats } = useQueueStats();
   const { data: destStats } = useDestinationStats();
   const { data: groupStats } = useGroupStats();
+  const { data: webhookStats } = useWebhookLogStats();
 
   return (
     <AdminLayout>
@@ -73,19 +78,29 @@ export default function Dashboard() {
             icon={Users}
             variant="default"
           />
+          <StatsCard
+            title="Webhook Events"
+            value={webhookStats?.total || 0}
+            description={`${webhookStats?.pending || 0} pending, ${webhookStats?.errors || 0} errors`}
+            icon={Webhook}
+            variant={webhookStats?.errors ? "destructive" : "info"}
+          />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <RecentActivity />
           <div className="space-y-6">
+            <RecentActivity />
+          </div>
+          <div className="space-y-6">
+            <WebhookActivityCard />
             <div className="rounded-lg border bg-card p-6">
               <h3 className="font-semibold mb-2">Quick Actions</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Common tasks to manage your media workflow
               </p>
               <div className="grid gap-2">
-                <a
-                  href="/queue"
+                <Link
+                  to="/queue"
                   className="flex items-center gap-3 p-3 rounded-md border hover:bg-accent transition-colors"
                 >
                   <Upload className="h-5 w-5 text-muted-foreground" />
@@ -95,9 +110,9 @@ export default function Dashboard() {
                       Approve or reject pending uploads
                     </p>
                   </div>
-                </a>
-                <a
-                  href="/destinations"
+                </Link>
+                <Link
+                  to="/destinations"
                   className="flex items-center gap-3 p-3 rounded-md border hover:bg-accent transition-colors"
                 >
                   <Send className="h-5 w-5 text-muted-foreground" />
@@ -107,9 +122,9 @@ export default function Dashboard() {
                       Add or manage publishing targets
                     </p>
                   </div>
-                </a>
-                <a
-                  href="/groups"
+                </Link>
+                <Link
+                  to="/groups"
                   className="flex items-center gap-3 p-3 rounded-md border hover:bg-accent transition-colors"
                 >
                   <Users className="h-5 w-5 text-muted-foreground" />
@@ -119,7 +134,19 @@ export default function Dashboard() {
                       Configure WhatsApp group monitoring
                     </p>
                   </div>
-                </a>
+                </Link>
+                <Link
+                  to="/logs"
+                  className="flex items-center gap-3 p-3 rounded-md border hover:bg-accent transition-colors"
+                >
+                  <Webhook className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">View Webhook Logs</p>
+                    <p className="text-xs text-muted-foreground">
+                      Monitor incoming WhatsApp events
+                    </p>
+                  </div>
+                </Link>
               </div>
             </div>
 
