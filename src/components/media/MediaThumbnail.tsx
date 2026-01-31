@@ -27,7 +27,7 @@ export function MediaThumbnail({
   useEffect(() => {
     if (pathToUse) {
       const { data } = supabase.storage
-        .from("whatsapp-media")
+        .from("whatsapp-media-public")
         .getPublicUrl(pathToUse);
       setImageUrl(data.publicUrl);
     } else {
