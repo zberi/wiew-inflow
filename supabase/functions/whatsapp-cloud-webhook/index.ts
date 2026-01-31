@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
           // Use phone_number_id as group identifier for Cloud API
           const groupId = `cloud_${phoneNumberId}`;
 
-          console.log(`Processing ${message.type} from ${senderPhone}, mediaId: ${mediaId}`);
+          console.log(`Processing ${message.type} from ${senderPhone}, mediaId: ${mediaId}?fields=url`);
 
           // Check for duplicates by message_id
           const { data: existing } = await supabase
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
           try {
             // Get media URL from Graph API
             const mediaUrlResponse = await fetch(
-              `https://graph.facebook.com/v18.0/${mediaId}`,
+              `https://graph.facebook.com/v18.0/${mediaId}?fields=url`,
               {
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
             const mediaUrlData = await mediaUrlResponse.json();
             const downloadUrl = mediaUrlData.url;
 
-            console.log(`Got media download URL for ${mediaId}`);
+            console.log(`Got media download URL for ${mediaId}?fields=url`);
 
             // Download media from Graph API
             const mediaResponse = await fetch(downloadUrl, {
@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
             console.log(`Inserted media item for ${messageId}`);
           } catch (mediaError: unknown) {
             const errorMessage = mediaError instanceof Error ? mediaError.message : "Unknown error";
-            console.error(`Error processing media ${mediaId}:`, mediaError);
+            console.error(`Error processing media ${mediaId}?fields=url:`, mediaError);
 
             await supabase
               .from("webhook_logs")
