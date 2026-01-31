@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
       try {
         // Get signed URL for the media
         const { data: signedUrlData } = await supabase.storage
-          .from("whatsapp-media")
+          .from("whatsapp-media-public")
           .createSignedUrl(media.file_path, 3600); // 1 hour
 
         if (!signedUrlData?.signedUrl) {
