@@ -97,7 +97,7 @@ export function useMediaUrl(filePath: string | null) {
     queryFn: async () => {
       if (!filePath) return null;
       const { data } = supabase.storage
-        .from("whatsapp-media")
+        .from("whatsapp-media-public")
         .getPublicUrl(filePath);
       return data.publicUrl;
     },
