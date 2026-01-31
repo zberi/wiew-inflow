@@ -43,7 +43,7 @@ export default function WhatsAppMediaViewer() {
   // Get signed URL for media file
   const getMediaUrl = (filePath: string) => {
     const { data } = supabase.storage
-      .from('whatsapp-media')
+      .from('whatsapp-media-public')
       .getPublicUrl(filePath);
     return data.publicUrl;
   };
