@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
             .from("media_items")
             .select("id")
             .eq("message_id", messageId)
-            .single();
+            .maybesingle();
 
           if (existing) {
             console.log(`Duplicate media found for message ${messageId}`);
