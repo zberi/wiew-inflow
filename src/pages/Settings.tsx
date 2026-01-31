@@ -128,7 +128,7 @@ export default function Settings() {
                 <span className="text-muted-foreground">Storage Bucket</span>
                 <Badge variant="default" className="gap-1">
                   <CheckCircle className="h-3 w-3" />
-                  whatsapp-media
+                  whatsapp-media-public
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
