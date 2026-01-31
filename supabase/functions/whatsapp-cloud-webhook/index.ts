@@ -142,14 +142,14 @@ Deno.serve(async (req) => {
           // Use phone_number_id as group identifier for Cloud API
           const groupId = `cloud_${phoneNumberId}`;
 
-          console.log(`Processing ${message.type} from ${senderPhone}, mediaId: ${mediaId}?fields=url`);
+          console.log(`Processing ${message.type} from ${senderPhone}, mediaId: ${mediaId}`);
 
-          // Check for duplicates by message_id
+          // Check for duplicates by message_id - FIXED: using maybeSingle()
           const { data: existing } = await supabase
             .from("media_items")
             .select("id")
             .eq("message_id", messageId)
-            .maybesingle();
+            .maybeSingle();
 
           if (existing) {
             console.log(`Duplicate media found for message ${messageId}`);
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
           }
 
           try {
-            // Get media URL from Graph API
+            // Get media URL from Graph API - FIXED: added ?fields=url
             const mediaUrlResponse = await fetch(
               `https://graph.facebook.com/v18.0/${mediaId}?fields=url`,
               {
@@ -174,7 +174,12 @@ Deno.serve(async (req) => {
             const mediaUrlData = await mediaUrlResponse.json();
             const downloadUrl = mediaUrlData.url;
 
-            console.log(`Got media download URL for ${mediaId}?fields=url`);
+            // FIXED: Added validation for downloadUrl
+            if (!downloadUrl) {
+              throw new Error('Graph API did not return a download URL');
+            }
+
+            console.log(`Got media download URL for ${mediaId}`);
 
             // Download media from Graph API
             const mediaResponse = await fetch(downloadUrl, {
@@ -189,22 +194,30 @@ Deno.serve(async (req) => {
 
             const mediaBlob = await mediaResponse.blob();
             const mediaBuffer = await mediaBlob.arrayBuffer();
+            
+            // FIXED: Convert to Uint8Array for better compatibility
+            const uint8Array = new Uint8Array(mediaBuffer);
 
             // Generate file path
             const extension = mimeType?.split("/")[1]?.split(";")[0] || "bin";
             const timestamp = Date.now();
             const filePath = `${groupId}/${timestamp}_${messageId}.${extension}`;
 
-            // Upload to storage
-            const { error: uploadError } = await supabase.storage
+            // Upload to storage - FIXED: using Uint8Array and checking response
+            const { data: uploadData, error: uploadError } = await supabase.storage
               .from("whatsapp-media-public")
-              .upload(filePath, mediaBuffer, {
+              .upload(filePath, uint8Array, {
                 contentType: mimeType,
                 upsert: false,
               });
 
             if (uploadError) {
               throw new Error(`Failed to upload to storage: ${uploadError.message}`);
+            }
+
+            // FIXED: Added validation for upload success
+            if (!uploadData) {
+              throw new Error('Upload returned no data');
             }
 
             console.log(`Uploaded media to ${filePath}`);
@@ -220,7 +233,7 @@ Deno.serve(async (req) => {
                 media_type: message.type === "video" ? "video" : "photo",
                 file_path: filePath,
                 mime_type: mimeType,
-                file_size: mediaBuffer.byteLength,
+                file_size: uint8Array.byteLength,
                 caption: caption,
                 received_at: new Date(parseInt(message.timestamp) * 1000).toISOString(),
                 metadata: {
@@ -239,7 +252,7 @@ Deno.serve(async (req) => {
             console.log(`Inserted media item for ${messageId}`);
           } catch (mediaError: unknown) {
             const errorMessage = mediaError instanceof Error ? mediaError.message : "Unknown error";
-            console.error(`Error processing media ${mediaId}?fields=url:`, mediaError);
+            console.error(`Error processing media ${mediaId}:`, mediaError);
 
             await supabase
               .from("webhook_logs")
