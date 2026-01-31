@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+//const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;//replaced with VITE_SUPABASE_PUBLISHABLE_KEY as advised by Claude
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface MediaItem {
