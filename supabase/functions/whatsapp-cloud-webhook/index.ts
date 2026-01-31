@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
 
             // Upload to storage
             const { error: uploadError } = await supabase.storage
-              .from("whatsapp-media")
+              .from("whatsapp-media-public")
               .upload(filePath, mediaBuffer, {
                 contentType: mimeType,
                 upsert: false,
