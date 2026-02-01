@@ -120,12 +120,11 @@ Deno.serve(async (req) => {
         const phoneNumberId = value.metadata?.phone_number_id;
 
         for (const message of messages) {
-          // Only process image and video messages
-          if (message.type !== "image" && message.type !== "video") {
+          // Process image, video, and text messages
+          if (message.type !== "image" && message.type !== "video" && message.type !== "text") {
             console.log(`Skipping message type: ${message.type}`);
             continue;
-          }
-
+          }          
           const mediaInfo = message.type === "image" ? message.image : message.video;
           if (!mediaInfo) continue;
 
