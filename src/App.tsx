@@ -11,6 +11,7 @@ import Groups from "./pages/Groups";
 import Logs from "./pages/Logs";
 import Diagnostics from "./pages/Diagnostics";
 import Settings from "./pages/Settings";
+import WhatsAppEvents from "./pages/WhatsAppEvents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/logs" element={<Logs />} />
+          <Route path="/whatsapp-events" element={<WhatsAppEvents />} />
           <Route path="/diagnostics" element={<Diagnostics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
