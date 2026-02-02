@@ -7,6 +7,7 @@ import {
   FileText,
   Settings,
   Activity,
+  MessageSquare,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -33,6 +34,7 @@ const configNavItems = [
 ];
 
 const systemNavItems = [
+  { title: "WhatsApp Events", url: "/whatsapp-events", icon: MessageSquare },
   { title: "Webhook Logs", url: "/logs", icon: FileText },
   { title: "Diagnostics", url: "/diagnostics", icon: Activity },
   { title: "Settings", url: "/settings", icon: Settings },
