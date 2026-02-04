@@ -22,10 +22,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+import { SendHorizonal } from "lucide-react";
+
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Media Library", url: "/media", icon: Image },
   { title: "Upload Queue", url: "/queue", icon: Upload },
+  { title: "Send Message", url: "/send-message", icon: SendHorizonal },
 ];
 
 const configNavItems = [
