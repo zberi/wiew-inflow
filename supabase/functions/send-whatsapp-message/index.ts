@@ -9,9 +9,11 @@ const corsHeaders = {
 interface SendMessageRequest {
   to: string;
   message: string;
-  type?: "text" | "template";
+   type?: "text" | "template" | "image" | "video";
   templateName?: string;
   templateLanguage?: string;
+   mediaUrl?: string;
+   caption?: string;
 }
 
 Deno.serve(async (req) => {
@@ -54,7 +56,7 @@ Deno.serve(async (req) => {
 
   try {
     const body: SendMessageRequest = await req.json();
-    const { to, message, type = "text", templateName, templateLanguage = "en" } = body;
+     const { to, message, type = "text", templateName, templateLanguage = "en", mediaUrl, caption } = body;
 
     if (!to) {
       return new Response(
@@ -73,7 +75,31 @@ Deno.serve(async (req) => {
 
     let messagePayload: Record<string, unknown>;
 
-    if (type === "template" && templateName) {
+     if (type === "image" && mediaUrl) {
+       // Image message
+       messagePayload = {
+         messaging_product: "whatsapp",
+         recipient_type: "individual",
+         to: cleanPhone,
+         type: "image",
+         image: {
+           link: mediaUrl,
+           caption: caption || undefined,
+         },
+       };
+     } else if (type === "video" && mediaUrl) {
+       // Video message
+       messagePayload = {
+         messaging_product: "whatsapp",
+         recipient_type: "individual",
+         to: cleanPhone,
+         type: "video",
+         video: {
+           link: mediaUrl,
+           caption: caption || undefined,
+         },
+       };
+     } else if (type === "template" && templateName) {
       // Template message
       messagePayload = {
         messaging_product: "whatsapp",
@@ -88,7 +114,7 @@ Deno.serve(async (req) => {
       };
     } else {
       // Text message
-      if (!message) {
+       if (!message && type === "text") {
         return new Response(
           JSON.stringify({ error: "Message text is required for text messages" }),
           {
@@ -154,7 +180,8 @@ Deno.serve(async (req) => {
         _event_type: "outbound_message",
         _message_type: type,
         _recipient_phone: cleanPhone,
-        _text_preview: message?.substring(0, 200) || templateName,
+         _text_preview: message?.substring(0, 200) || caption?.substring(0, 200) || templateName || mediaUrl,
+         _media_url: mediaUrl,
         _message_id: responseData.messages?.[0]?.id,
         _sent_at: new Date().toISOString(),
         response: responseData,
