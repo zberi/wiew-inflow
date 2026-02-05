@@ -412,20 +412,28 @@ export default function SendMessage() {
                      ) : (
                        <div className="space-y-2">
                          <Label>Select from Library</Label>
-                         <Select value={selectedMediaId} onValueChange={setSelectedMediaId}>
-                           <SelectTrigger>
-                             <SelectValue placeholder="Choose an image..." />
-                           </SelectTrigger>
-                           <SelectContent>
-                             {mediaItems
-                               ?.filter(m => m.media_type === "photo")
-                               .map(media => (
-                                 <SelectItem key={media.id} value={media.id}>
-                                   {media.caption || media.sender_name || media.id.slice(0, 8)}
-                                 </SelectItem>
-                               ))}
-                           </SelectContent>
-                         </Select>
+                          {mediaItems?.filter(m => m.media_type === "photo").length === 0 ? (
+                            <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
+                              <Image className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">No images in library yet.</p>
+                              <p className="text-xs mt-1">Images received via WhatsApp will appear here.</p>
+                            </div>
+                          ) : (
+                            <Select value={selectedMediaId} onValueChange={setSelectedMediaId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose an image..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mediaItems
+                                  ?.filter(m => m.media_type === "photo")
+                                  .map(media => (
+                                    <SelectItem key={media.id} value={media.id}>
+                                      {media.caption || media.sender_name || media.id.slice(0, 8)}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                          {selectedMediaUrl && (
                            <div className="mt-2 rounded-lg border overflow-hidden">
                              <img 
@@ -506,20 +514,28 @@ export default function SendMessage() {
                      ) : (
                        <div className="space-y-2">
                          <Label>Select from Library</Label>
-                         <Select value={selectedMediaId} onValueChange={setSelectedMediaId}>
-                           <SelectTrigger>
-                             <SelectValue placeholder="Choose a video..." />
-                           </SelectTrigger>
-                           <SelectContent>
-                             {mediaItems
-                               ?.filter(m => m.media_type === "video")
-                               .map(media => (
-                                 <SelectItem key={media.id} value={media.id}>
-                                   {media.caption || media.sender_name || media.id.slice(0, 8)}
-                                 </SelectItem>
-                               ))}
-                           </SelectContent>
-                         </Select>
+                          {mediaItems?.filter(m => m.media_type === "video").length === 0 ? (
+                            <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
+                              <Video className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">No videos in library yet.</p>
+                              <p className="text-xs mt-1">Videos received via WhatsApp will appear here.</p>
+                            </div>
+                          ) : (
+                            <Select value={selectedMediaId} onValueChange={setSelectedMediaId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose a video..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mediaItems
+                                  ?.filter(m => m.media_type === "video")
+                                  .map(media => (
+                                    <SelectItem key={media.id} value={media.id}>
+                                      {media.caption || media.sender_name || media.id.slice(0, 8)}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                        </div>
                      )}
  
