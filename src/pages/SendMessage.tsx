@@ -8,9 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2, CheckCircle, XCircle, MessageSquare, FileText } from "lucide-react";
+ import { Send, Loader2, CheckCircle, XCircle, MessageSquare, FileText, Image, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+ import { useMediaItems, useMediaUrl } from "@/hooks/useMediaItems";
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SentMessage {
   id: string;
@@ -29,6 +31,16 @@ export default function SendMessage() {
   const [templateLanguage, setTemplateLanguage] = useState("en");
   const [isSending, setIsSending] = useState(false);
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);
+   const [mediaUrl, setMediaUrl] = useState("");
+   const [mediaCaption, setMediaCaption] = useState("");
+   const [selectedMediaId, setSelectedMediaId] = useState("");
+   const [mediaInputMode, setMediaInputMode] = useState<"url" | "library">("url");
+ 
+   const { data: mediaItems } = useMediaItems();
+ 
+   // Get public URL for selected media
+   const selectedMedia = mediaItems?.find(m => m.id === selectedMediaId);
+   const { data: selectedMediaUrl } = useMediaUrl(selectedMedia?.file_path ?? null);
 
   const sendTextMessage = async () => {
     if (!phoneNumber.trim()) {
@@ -108,6 +120,91 @@ export default function SendMessage() {
     }
   };
 
+   const sendMediaMessage = async (mediaType: "image" | "video") => {
+     if (!phoneNumber.trim()) {
+       toast({
+         title: "Error",
+         description: "Please enter a phone number",
+         variant: "destructive",
+       });
+       return;
+     }
+ 
+     const finalMediaUrl = mediaInputMode === "library" ? selectedMediaUrl : mediaUrl;
+ 
+     if (!finalMediaUrl) {
+       toast({
+         title: "Error",
+         description: mediaInputMode === "library" 
+           ? "Please select media from the library" 
+           : "Please enter a media URL",
+         variant: "destructive",
+       });
+       return;
+     }
+ 
+     setIsSending(true);
+ 
+     try {
+       const { data, error } = await supabase.functions.invoke("send-whatsapp-message", {
+         body: {
+           to: phoneNumber,
+           type: mediaType,
+           mediaUrl: finalMediaUrl,
+           caption: mediaCaption || undefined,
+         },
+       });
+ 
+       if (error) throw error;
+ 
+       if (data.error) {
+         throw new Error(data.error);
+       }
+ 
+       setSentMessages((prev) => [
+         {
+           id: data.messageId || Date.now().toString(),
+           to: phoneNumber,
+           message: `${mediaType}: ${mediaCaption || finalMediaUrl}`,
+           status: "sent",
+           timestamp: new Date(),
+         },
+         ...prev,
+       ]);
+ 
+       toast({
+         title: "Media Sent",
+         description: `${mediaType === "image" ? "Image" : "Video"} sent to ${phoneNumber}`,
+       });
+ 
+       setMediaCaption("");
+       if (mediaInputMode === "url") setMediaUrl("");
+       if (mediaInputMode === "library") setSelectedMediaId("");
+     } catch (err) {
+       const errorMessage = err instanceof Error ? err.message : "Failed to send media";
+       
+       setSentMessages((prev) => [
+         {
+           id: Date.now().toString(),
+           to: phoneNumber,
+           message: `${mediaType}: ${mediaCaption || finalMediaUrl}`,
+           status: "failed",
+           timestamp: new Date(),
+           error: errorMessage,
+         },
+         ...prev,
+       ]);
+ 
+       toast({
+         title: "Failed to Send",
+         description: errorMessage,
+         variant: "destructive",
+       });
+     } finally {
+       setIsSending(false);
+     }
+   };
+ 
   const sendTemplateMessage = async () => {
     if (!phoneNumber.trim()) {
       toast({
@@ -223,11 +320,19 @@ export default function SendMessage() {
                 </div>
 
                 <Tabs defaultValue="text" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
+                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="text" className="flex items-center gap-1">
                       <MessageSquare className="h-4 w-4" />
                       Text
                     </TabsTrigger>
+                     <TabsTrigger value="image" className="flex items-center gap-1">
+                       <Image className="h-4 w-4" />
+                       Image
+                     </TabsTrigger>
+                     <TabsTrigger value="video" className="flex items-center gap-1">
+                       <Video className="h-4 w-4" />
+                       Video
+                     </TabsTrigger>
                     <TabsTrigger value="template" className="flex items-center gap-1">
                       <FileText className="h-4 w-4" />
                       Template
@@ -268,6 +373,185 @@ export default function SendMessage() {
                     </Button>
                   </TabsContent>
 
+                   <TabsContent value="image" className="space-y-4">
+                     <div className="space-y-2">
+                       <Label>Image Source</Label>
+                       <div className="flex gap-2">
+                         <Button
+                           type="button"
+                           variant={mediaInputMode === "url" ? "default" : "outline"}
+                           size="sm"
+                           onClick={() => setMediaInputMode("url")}
+                         >
+                           URL
+                         </Button>
+                         <Button
+                           type="button"
+                           variant={mediaInputMode === "library" ? "default" : "outline"}
+                           size="sm"
+                           onClick={() => setMediaInputMode("library")}
+                         >
+                           Media Library
+                         </Button>
+                       </div>
+                     </div>
+ 
+                     {mediaInputMode === "url" ? (
+                       <div className="space-y-2">
+                         <Label htmlFor="imageUrl">Image URL</Label>
+                         <Input
+                           id="imageUrl"
+                           placeholder="https://example.com/image.jpg"
+                           value={mediaUrl}
+                           onChange={(e) => setMediaUrl(e.target.value)}
+                         />
+                         <p className="text-xs text-muted-foreground">
+                           Must be a publicly accessible HTTPS URL (JPEG, PNG supported).
+                         </p>
+                       </div>
+                     ) : (
+                       <div className="space-y-2">
+                         <Label>Select from Library</Label>
+                         <Select value={selectedMediaId} onValueChange={setSelectedMediaId}>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Choose an image..." />
+                           </SelectTrigger>
+                           <SelectContent>
+                             {mediaItems
+                               ?.filter(m => m.media_type === "photo")
+                               .map(media => (
+                                 <SelectItem key={media.id} value={media.id}>
+                                   {media.caption || media.sender_name || media.id.slice(0, 8)}
+                                 </SelectItem>
+                               ))}
+                           </SelectContent>
+                         </Select>
+                         {selectedMediaUrl && (
+                           <div className="mt-2 rounded-lg border overflow-hidden">
+                             <img 
+                               src={selectedMediaUrl} 
+                               alt="Selected" 
+                               className="w-full h-32 object-cover"
+                             />
+                           </div>
+                         )}
+                       </div>
+                     )}
+ 
+                     <div className="space-y-2">
+                       <Label htmlFor="imageCaption">Caption (optional)</Label>
+                       <Input
+                         id="imageCaption"
+                         placeholder="Add a caption..."
+                         value={mediaCaption}
+                         onChange={(e) => setMediaCaption(e.target.value)}
+                       />
+                     </div>
+ 
+                     <Button
+                       onClick={() => sendMediaMessage("image")}
+                       disabled={isSending}
+                       className="w-full"
+                     >
+                       {isSending ? (
+                         <>
+                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                           Sending...
+                         </>
+                       ) : (
+                         <>
+                           <Send className="h-4 w-4 mr-2" />
+                           Send Image
+                         </>
+                       )}
+                     </Button>
+                   </TabsContent>
+ 
+                   <TabsContent value="video" className="space-y-4">
+                     <div className="space-y-2">
+                       <Label>Video Source</Label>
+                       <div className="flex gap-2">
+                         <Button
+                           type="button"
+                           variant={mediaInputMode === "url" ? "default" : "outline"}
+                           size="sm"
+                           onClick={() => setMediaInputMode("url")}
+                         >
+                           URL
+                         </Button>
+                         <Button
+                           type="button"
+                           variant={mediaInputMode === "library" ? "default" : "outline"}
+                           size="sm"
+                           onClick={() => setMediaInputMode("library")}
+                         >
+                           Media Library
+                         </Button>
+                       </div>
+                     </div>
+ 
+                     {mediaInputMode === "url" ? (
+                       <div className="space-y-2">
+                         <Label htmlFor="videoUrl">Video URL</Label>
+                         <Input
+                           id="videoUrl"
+                           placeholder="https://example.com/video.mp4"
+                           value={mediaUrl}
+                           onChange={(e) => setMediaUrl(e.target.value)}
+                         />
+                         <p className="text-xs text-muted-foreground">
+                           Must be a publicly accessible HTTPS URL (MP4, 3GPP supported).
+                         </p>
+                       </div>
+                     ) : (
+                       <div className="space-y-2">
+                         <Label>Select from Library</Label>
+                         <Select value={selectedMediaId} onValueChange={setSelectedMediaId}>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Choose a video..." />
+                           </SelectTrigger>
+                           <SelectContent>
+                             {mediaItems
+                               ?.filter(m => m.media_type === "video")
+                               .map(media => (
+                                 <SelectItem key={media.id} value={media.id}>
+                                   {media.caption || media.sender_name || media.id.slice(0, 8)}
+                                 </SelectItem>
+                               ))}
+                           </SelectContent>
+                         </Select>
+                       </div>
+                     )}
+ 
+                     <div className="space-y-2">
+                       <Label htmlFor="videoCaption">Caption (optional)</Label>
+                       <Input
+                         id="videoCaption"
+                         placeholder="Add a caption..."
+                         value={mediaCaption}
+                         onChange={(e) => setMediaCaption(e.target.value)}
+                       />
+                     </div>
+ 
+                     <Button
+                       onClick={() => sendMediaMessage("video")}
+                       disabled={isSending}
+                       className="w-full"
+                     >
+                       {isSending ? (
+                         <>
+                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                           Sending...
+                         </>
+                       ) : (
+                         <>
+                           <Send className="h-4 w-4 mr-2" />
+                           Send Video
+                         </>
+                       )}
+                     </Button>
+                   </TabsContent>
+ 
                   <TabsContent value="template" className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="templateName">Template Name</Label>
@@ -394,6 +678,10 @@ export default function SendMessage() {
               <strong>Phone Format:</strong> Use international format with country code 
               (e.g., 14155238886 for US numbers). The leading + is optional.
             </p>
+             <p>
+               <strong>Media Messages:</strong> Images and videos must be publicly accessible via HTTPS URLs.
+               You can also select from your media library if using public storage.
+             </p>
           </CardContent>
         </Card>
       </div>
