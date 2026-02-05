@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   CheckCircle, 
   XCircle, 
@@ -13,9 +15,16 @@ import {
   Radio, 
   Wifi,
   MessageSquare,
-  RefreshCw
+  RefreshCw,
+  Image,
+  Video,
+  FileText,
+  AlertCircle,
+  Inbox
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useInboundEvents } from "@/hooks/useWebhookLogs";
+import { formatDistanceToNow } from "date-fns";
 
 type TestStatus = "idle" | "loading" | "success" | "error";
 
@@ -341,6 +350,10 @@ export default function Diagnostics() {
         </Card>
 
         {/* Setup Info */}
+        {/* Inbound Events Log */}
+        <InboundEventsCard />
+
+        {/* Facebook Setup Info */}
         <Card>
           <CardHeader>
             <CardTitle>Facebook Developer Setup</CardTitle>
@@ -389,5 +402,140 @@ export default function Diagnostics() {
         </Card>
       </div>
     </AdminLayout>
+  );
+}
+
+function InboundEventsCard() {
+  const { data: events, isLoading, refetch, isRefetching } = useInboundEvents(50);
+
+  const getMessageTypeIcon = (type: string | null) => {
+    switch (type) {
+      case "text":
+        return <FileText className="h-4 w-4 text-muted-foreground" />;
+      case "image":
+      case "photo":
+        return <Image className="h-4 w-4 text-blue-500" />;
+      case "video":
+        return <Video className="h-4 w-4 text-purple-500" />;
+      default:
+        return <MessageSquare className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getEventBadge = (event: { event_type: string; message_type: string | null; error: string | null }) => {
+    if (event.error) {
+      return <Badge variant="destructive">Error</Badge>;
+    }
+    if (event.event_type === "status") {
+      return <Badge variant="secondary">Status</Badge>;
+    }
+    if (event.message_type) {
+      return <Badge variant="outline" className="capitalize">{event.message_type}</Badge>;
+    }
+    return <Badge variant="secondary">{event.event_type}</Badge>;
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Inbox className="h-5 w-5" />
+              Inbound Events
+            </CardTitle>
+            <CardDescription>
+              Recent webhook events received from WhatsApp. Auto-refreshes every 10 seconds.
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetch()}
+            disabled={isRefetching}
+          >
+            {isRefetching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !events || events.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+            <Inbox className="h-10 w-10 mb-2 opacity-50" />
+            <p className="text-sm">No inbound events yet.</p>
+            <p className="text-xs mt-1">Send a message to your WhatsApp number to see events here.</p>
+          </div>
+        ) : (
+          <ScrollArea className="h-[400px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">Type</TableHead>
+                  <TableHead>Sender</TableHead>
+                  <TableHead>Content</TableHead>
+                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="w-[120px]">Time</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell>
+                      {getMessageTypeIcon(event.message_type)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium truncate max-w-[150px]">
+                          {event.sender_name || "Unknown"}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {event.sender_phone || "—"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-[200px]">
+                        {event.error ? (
+                          <div className="flex items-center gap-1 text-destructive">
+                            <AlertCircle className="h-3 w-3 shrink-0" />
+                            <span className="text-xs truncate">{event.error}</span>
+                          </div>
+                        ) : event.text_preview ? (
+                          <span className="text-sm truncate block">{event.text_preview}</span>
+                        ) : event.media_filename ? (
+                          <span className="text-xs font-mono text-muted-foreground truncate block">
+                            {event.media_filename}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {getEventBadge(event)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-muted-foreground">
+                        {event.created_at 
+                          ? formatDistanceToNow(new Date(event.created_at), { addSuffix: true })
+                          : "—"}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        )}
+      </CardContent>
+    </Card>
   );
 }
